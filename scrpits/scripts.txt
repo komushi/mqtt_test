@@ -1,0 +1,25 @@
+1. start mocas_test,mosquitto or find a mqtt broker
+mqtt://localhost
+port:1883
+	mocas_test steps:
+	1) redis-server --port 6379
+	2) npm start
+
+2. start spring xd-singlenopde and xd-shell, in xd-shell deploy a mqtt sink stream 
+
+stream create mqttsink --definition "http --port=9000 | mqtt --url=tcp://localhost:1883  --topic=sent_by_xd" --deploy
+
+3. start mqtt_test
+
+4. send data from xd-shell
+http post --target http://localhost:9000 --data "{\"id\":\"2775\",\"countryCode\":\"CN\",\"orderAmt\":\"125\"}"
+
+http post --target http://localhost:9000 --data "abc"
+
+5. in xd-shell deploy a mqtt source stream 
+
+stream create mqttsrc --definition "mqtt --url=tcp://localhost:1883 --topics=sent_by_mqtt_test| log" --deploy
+
+http post --target http://localhost:9000 --data "{\"id\":\"2775\",\"countryCode\":\"JP\",\"orderAmt\":\"125\"}"
+
+http post --target http://localhost:9000 --data "{\"id\":\"2776\",\"countryCode\":\"CN\",\"orderAmt\":\"127\"}"
